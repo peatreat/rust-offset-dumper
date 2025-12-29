@@ -1,0 +1,10 @@
+[package]
+name = "rust-offset-dumper"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+
+[build-dependencies]
+iced-x86 = "1.21.0"
+winapi = { version = "0.3.9", features = ["winnt"] }
