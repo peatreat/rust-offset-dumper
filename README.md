@@ -12,6 +12,8 @@ A build-time utility that automatically extracts the latest offsets and decrypti
 
 - `IL2CPP_HANDLE_TABLE_OFFSET` - IL2CPP runtime handle table
 - `LIST_COMPONENT_BUFFER_OFFSET` - List component buffer offset
+- `MAIN_CAMERA_C_OFFSET` - MainCamera class pointer
+- `MAIN_CAMERA_C_CAMERA_OFFSET` - MainCamera camera offset
 - `BASE_NETWORKABLE_C_OFFSET` - BaseNetworkable class pointer
 - `BASE_NETWORKABLE_C_STATIC_FIELDS` - Static fields offset
 - `BASE_NETWORKABLE_C_CLIENT_ENTS_OFFSET` - Client entities list offset

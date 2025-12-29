@@ -72,12 +72,17 @@ fn main() {
 
     let list_component_buffer_offset = get_list_component_buffer_offset(&game_file);
 
+    let (main_camera_c_ptr, camera_obj_offset) = get_main_camera_offsets(&game_file);
+
     let (base_networkable_c_ptr_offset, client_entities_offset, base_networkable_c_decrypt_fn_offset, entity_list_decrypt_fn_offset) = get_base_networkable_offsets(&game_file);
 
     let (local_player_c_ptr_offset, local_baseplayer_offset, base_player_decrypt_fn_offset) = get_local_player_offsets(&game_file);
 
     offsets_file += &format!("{}\n", create_offset("IL2CPP_HANDLE_TABLE_OFFSET", il2cpp_handle_table_offset));
     offsets_file += &format!("{}\n\n", create_offset("LIST_COMPONENT_BUFFER_OFFSET", list_component_buffer_offset));
+    
+    offsets_file += &format!("{}\n", create_offset("MAIN_CAMERA_C_OFFSET", main_camera_c_ptr));
+    offsets_file += &format!("{}\n\n", create_offset("MAIN_CAMERA_C_CAMERA_OFFSET", camera_obj_offset));
 
     offsets_file += &format!("{}\n", create_offset("BASE_NETWORKABLE_C_OFFSET", base_networkable_c_ptr_offset));
     offsets_file += &format!("{}\n", create_offset("BASE_NETWORKABLE_C_STATIC_FIELDS", 0xB8));
@@ -288,6 +293,29 @@ fn get_list_component_buffer_offset(game_file: &[u8]) -> usize {
         let offset = ptr::read_unaligned(game_file.as_ptr().wrapping_add(cdqe + 17));
 
         offset as usize
+    }
+}
+
+fn get_main_camera_offsets(game_file: &[u8]) -> (usize, usize) {
+    unsafe {
+        let mov_rax_maincamera_c = find_pattern_internal(
+            0,
+            game_file,
+            &[0xF2, b'?', b'?', b'?', 0x8B, 0x78, 0x08, 0x48, 0x8B, 0x05, b'?', b'?', b'?', b'?', 0x48, 0x8B, 0x88, 0xB8, 0x00, 0x00, 0x00, 0x48, 0x8B, 0x89, b'?',  b'?',  b'?',  b'?'],
+            "x???xxxxxx????xxxxxxxxxx????",
+            true,
+            1
+        ).expect("Failed to find pattern for MainCamera_c*") + 0x7;
+
+        let main_camera_c_rva = offset_to_rva(game_file, mov_rax_maincamera_c)
+            .expect("Failed to get rva for MainCamera_c*");
+
+        let rel_offset = ptr::read_unaligned(game_file.as_ptr().wrapping_add(mov_rax_maincamera_c + 0x3) as *const i32);
+        let main_camera_c_ptr = (main_camera_c_rva + 0x7).wrapping_add_signed(rel_offset as isize);
+        
+        let camera_obj_offset = ptr::read_unaligned(game_file.as_ptr().wrapping_add(mov_rax_maincamera_c + 17) as *const u32);
+
+        (main_camera_c_ptr, camera_obj_offset as usize)
     }
 }
 
